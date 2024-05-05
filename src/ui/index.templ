@@ -1,13 +1,18 @@
 package ui
 
-templ Index() {
+import "github.com/montediogo/energydk/src/energy"
+
+templ Index(overview energy.PriceOverView) {
     <!DOCTYPE html>
     <html>
         <head>
+            <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+            <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
             <title>Templ test, the date is</title>
         </head>
         <body>
             @Hello("World")
+            @PricesList(overview)
         </body>
     </html>
 }

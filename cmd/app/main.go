@@ -1,33 +1,29 @@
 package main
 
 import (
-	"encoding/json"
-	"github.com/a-h/templ"
+	"github.com/montediogo/energydk/src/chart"
 	"github.com/montediogo/energydk/src/energy"
-	"github.com/montediogo/energydk/src/ui"
 	"log"
 	"net/http"
 )
 
-type ErrorMessage struct {
-	message string
-}
+func httpserver(w http.ResponseWriter, _ *http.Request) {
+	prices, _ := energy.ListEnergyPrices()
 
-func listEnergy(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	prices, err := energy.ListEnergyPrices()
-	if err != nil {
-		errorMessage := ErrorMessage{message: err.Error()}
-		_ = json.NewEncoder(w).Encode(errorMessage)
+	xAxis := make([]string, 0, len(prices.AllPrices))
+	values := make([]interface{}, 0, len(prices.AllPrices))
+
+	for _, price := range prices.AllPrices {
+		xAxis = append(xAxis, price.Time)
+		values = append(values, price.PriceDkk)
 	}
-	_ = json.NewEncoder(w).Encode(prices)
+	barChart := chart.DrawBarChart("Energy prices", xAxis, values)
+	barChart.Render(w)
 }
 
 func main() {
-	indexComponent := ui.Index()
-	http.Handle("/", templ.Handler(indexComponent))
-	//http.HandleFunc("/energy", listEnergy)
-	if err := http.ListenAndServe(":8081", nil); err != nil {
+	http.HandleFunc("/", httpserver)
+	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal("server error", err)
 	}
 }
